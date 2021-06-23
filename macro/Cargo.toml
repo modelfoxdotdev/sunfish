@@ -1,0 +1,23 @@
+[package]
+authors = ["Tangram <root@tangram.xyz"]
+description = "Web Application Build Tool"
+documentation = "https://docs.rs/sunfish"
+edition = "2018"
+homepage = "https://github.com/tangramxyz/sunfish"
+license = "MIT"
+name = "sunfish_macro"
+publish = true
+repository = "https://github.com/tangramxyz/sunfish"
+version = "0.2.0"
+
+[lib]
+path = "lib.rs"
+proc-macro = true
+
+[dependencies]
+glob = "0.3"
+proc-macro2 = "1"
+quote = "1"
+syn = { version = "1", features = ["full"] }
+toml = "0.5"
+walkdir = "2"
