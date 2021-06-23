@@ -1,8 +1,8 @@
 use crate::hash::hash;
+use anyhow::{anyhow, Result};
 use ignore::Walk;
 use rayon::prelude::*;
 use std::path::PathBuf;
-use tangram_error::{err, Result};
 use which::which;
 
 pub struct BuildOptions {
@@ -81,7 +81,7 @@ pub fn build(options: BuildOptions) -> Result<()> {
 		let mut process = std::process::Command::new(cmd).args(&args).spawn()?;
 		let status = process.wait()?;
 		if !status.success() {
-			return Err(err!("cargo {}", status.to_string()));
+			return Err(anyhow!("cargo {}", status.to_string()));
 		}
 	}
 	enabled_client_crate_package_names
@@ -113,7 +113,7 @@ pub fn build(options: BuildOptions) -> Result<()> {
 				.input_path(input_path)
 				.out_name(&hash)
 				.generate(&js_dir)
-				.map_err(|error| err!(error))
+				.map_err(|error| anyhow!(error))
 				.unwrap();
 		});
 	// Collect CSS.

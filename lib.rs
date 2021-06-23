@@ -3,6 +3,7 @@ pub use self::{
 	builder::{build, BuildOptions},
 	hash::hash,
 };
+use anyhow::Result;
 use futures::FutureExt;
 use ignore::Walk;
 use std::{
@@ -11,7 +12,6 @@ use std::{
 	pin::Pin,
 };
 pub use sunfish_macro::init;
-use tangram_error::Result;
 
 mod builder;
 pub mod embed;

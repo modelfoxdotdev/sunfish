@@ -29,6 +29,9 @@ name = "anyhow"
 version = "1.0.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "15af2628f6890fe2609a3b91bef4c83450512802e59489f9c1cb1fa5df064a61"
+dependencies = [
+ "backtrace",
+]
 
 [[package]]
 name = "autocfg"
@@ -925,7 +928,7 @@ dependencies = [
 name = "sunfish"
 version = "0.2.0"
 dependencies = [
- "backtrace",
+ "anyhow",
  "duct",
  "futures",
  "glob",
@@ -936,7 +939,6 @@ dependencies = [
  "rayon",
  "sha2",
  "sunfish_macro",
- "tangram_error",
  "tokio",
  "toml",
  "tower",
@@ -967,13 +969,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-xid",
-]
-
-[[package]]
-name = "tangram_error"
-version = "0.4.0"
-dependencies = [
- "backtrace",
 ]
 
 [[package]]
