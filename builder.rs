@@ -13,7 +13,11 @@ pub struct BuildOptions {
 }
 
 pub fn build(options: BuildOptions) -> Result<()> {
-	let target_wasm_dir = options.crate_out_dir.join("target_wasm");
+	let target_wasm_dir = if cfg!(windows) {
+		options.workspace_path.join("target_wasm");
+	} else {
+		options.crate_out_dir.join("target_wasm");
+	};
 	let output_dir = options.crate_out_dir.join("output");
 	let assets_dir = output_dir.join("assets");
 	let js_dir = output_dir.join("js");

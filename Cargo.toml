@@ -13,16 +13,14 @@ license = "MIT"
 name = "sunfish"
 publish = true
 repository = "https://github.com/tangramxyz/sunfish"
-version = "0.2.0"
+version = "0.2.1"
 
 [lib]
 path = "lib.rs"
 
 [dependencies]
 anyhow = { version = "1", features = ["backtrace"] }
-duct = "0.13"
 futures = "0.3"
-glob = "0.3"
 hex = "0.4"
 http = "0.2"
 hyper = { version = "0.14", features = ["full"] }
@@ -32,8 +30,6 @@ sha2 = "0.9"
 sunfish_macro = { version = "0.2", path = "macro" }
 tokio = { version = "1" ,features = ["full"] }
 toml = "0.5"
-tower = { version = "0.4", features = ["make", "util"] }
-tower-http = { version = "0.1", features = ["add-extension", "trace"] }
 tracing = "0.1"
 wasm-bindgen-cli-support = "0.2"
 which = "4"
