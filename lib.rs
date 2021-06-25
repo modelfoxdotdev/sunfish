@@ -294,7 +294,7 @@ impl ReleaseSunfish {
 						.unwrap_or_else(|| vec![route.path_with_placeholders.clone()]);
 					for path in paths {
 						let output_html_path = match path.as_str() {
-							"/" => "index.html".to_owned(),
+							"/" => "/index.html".to_owned(),
 							path if path.ends_with('/') => format!("{}index.html", path),
 							path => format!("{}.html", path),
 						};

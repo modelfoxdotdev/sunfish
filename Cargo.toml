@@ -13,7 +13,7 @@ license = "MIT"
 name = "sunfish"
 publish = true
 repository = "https://github.com/tangramxyz/sunfish"
-version = "0.2.2"
+version = "0.2.3"
 
 [lib]
 path = "lib.rs"
