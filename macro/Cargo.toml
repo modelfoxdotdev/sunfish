@@ -8,7 +8,7 @@ license = "MIT"
 name = "sunfish_macro"
 publish = true
 repository = "https://github.com/tangramxyz/sunfish"
-version = "0.2.1"
+version = "0.2.2"
 
 [lib]
 path = "lib.rs"
