@@ -30,7 +30,8 @@ pub fn build(options: BuildOptions) -> Result<()> {
 	for entry in Walk::new(options.crate_path.join("pages")) {
 		let entry = entry.unwrap();
 		let path = entry.path();
-		if path.ends_with("client/Cargo.toml") {
+		let suffix: PathBuf = ["client", "Cargo.toml"].iter().collect();
+		if path.ends_with(suffix) {
 			let client_crate_manifest_path = path.strip_prefix(&options.workspace_path).unwrap();
 			client_crate_manifest_paths.push(client_crate_manifest_path.to_owned());
 		}
@@ -92,12 +93,10 @@ pub fn build(options: BuildOptions) -> Result<()> {
 		.par_iter()
 		.for_each(|client_crate_package_name| {
 			let hash = hash(client_crate_package_name);
-			let input_path = format!(
-				"{}/wasm32-unknown-unknown/{}/{}.wasm",
-				target_wasm_dir.display(),
-				profile,
-				client_crate_package_name,
-			);
+			let mut input_path = target_wasm_dir.clone();
+			input_path.push("wasm32-unknown-unknown");
+			input_path.push(&profile);
+			input_path.push(format!("{}.wasm", client_crate_package_name));
 			let output_path = js_dir.join(format!("{}_bg.wasm", hash));
 			// Do not re-run wasm-bindgen if the output wasm exists and is not older than the input wasm.
 			let input_metadata = std::fs::metadata(&input_path).unwrap();

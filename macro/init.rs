@@ -110,26 +110,40 @@ fn server_entries(pages_path: &Path) -> Vec<ServerEntry> {
 				.as_str()
 				.unwrap()
 				.to_owned();
-			let path_with_placeholders = manifest_path
-				.strip_prefix(&pages_path)
-				.unwrap()
-				.to_str()
-				.unwrap()
-				.strip_suffix("/server/Cargo.toml")
-				.unwrap();
-			let path_with_placeholders = if let Some(path_with_placeholders) =
-				path_with_placeholders.strip_suffix("/index")
-			{
-				format!("/{}/", path_with_placeholders)
-			} else {
-				format!("/{}", path_with_placeholders)
-			};
+			let path_with_placeholders = path_with_placeholders(&pages_path, &manifest_path);
 			ServerEntry {
 				package_name,
 				path_with_placeholders,
 			}
 		})
 		.collect::<Vec<_>>()
+}
+
+fn path_with_placeholders(pages_path: &Path, manifest_path: &Path) -> String {
+	let components = manifest_path
+		.parent()
+		.unwrap()
+		.parent()
+		.unwrap()
+		.strip_prefix(&pages_path)
+		.unwrap()
+		.components()
+		.map(|component| match component {
+			std::path::Component::Prefix(_) => panic!(),
+			std::path::Component::RootDir => panic!(),
+			std::path::Component::CurDir => panic!(),
+			std::path::Component::ParentDir => panic!(),
+			std::path::Component::Normal(component) => component.to_str().unwrap(),
+		});
+	let mut path = String::new();
+	for component in components {
+		path.push('/');
+		path.push_str(component);
+	}
+	if path.ends_with("/index") {
+		path.truncate(path.len() - "index".len());
+	}
+	path
 }
 
 fn routes_handler(server_entries: &[ServerEntry]) -> proc_macro2::TokenStream {
