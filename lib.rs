@@ -16,6 +16,7 @@ pub use sunfish_macro::init;
 mod builder;
 pub mod embed;
 mod hash;
+pub mod watchserve;
 
 pub enum Page {
 	Static {
