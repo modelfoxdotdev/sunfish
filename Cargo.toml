@@ -13,7 +13,7 @@ license = "MIT"
 name = "sunfish"
 publish = true
 repository = "https://github.com/tangramdotdev/sunfish"
-version = "0.2.4"
+version = "0.2.5"
 
 [lib]
 path = "lib.rs"
@@ -27,7 +27,7 @@ hex = "0.4"
 http = "0.2"
 hyper = { version = "0.14", features = ["full"] }
 ignore = "0.4"
-notify = "5.0.0-pre.9"
+notify = "5.0.0-pre.11"
 rayon = "1.5"
 sha2 = "0.9"
 sunfish_macro = { version = "0.2", path = "macro" }

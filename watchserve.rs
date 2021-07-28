@@ -49,19 +49,18 @@ pub async fn run(config: Config) {
 	watch_events_tx.send(()).unwrap();
 
 	// Run the file watcher.
-	let mut watcher: notify::RecommendedWatcher =
-		notify::Watcher::new_immediate(move |result: notify::Result<notify::Event>| {
-			let event = result.unwrap();
-			let ignored = event.paths.iter().all(|path| {
-				ignore_paths
-					.iter()
-					.any(|ignore_path| path.starts_with(ignore_path))
-			});
-			if !ignored {
-				watch_events_tx.send(()).unwrap();
-			}
-		})
-		.unwrap();
+	let mut watcher = notify::recommended_watcher(move |result: notify::Result<notify::Event>| {
+		let event = result.unwrap();
+		let ignored = event.paths.iter().all(|path| {
+			ignore_paths
+				.iter()
+				.any(|ignore_path| path.starts_with(ignore_path))
+		});
+		if !ignored {
+			watch_events_tx.send(()).unwrap();
+		}
+	})
+	.unwrap();
 	for path in watch_paths.iter() {
 		watcher
 			.watch(path, notify::RecursiveMode::Recursive)
