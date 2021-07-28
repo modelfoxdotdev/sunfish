@@ -92,7 +92,7 @@ fn server_entries(pages_path: &Path) -> Vec<ServerEntry> {
 		.join("Cargo.toml")
 		.display()
 		.to_string();
-	glob::glob(&glob)
+	let mut entries = glob::glob(&glob)
 		.unwrap()
 		.filter_map(Result::ok)
 		.map(|manifest_path| {
@@ -116,7 +116,13 @@ fn server_entries(pages_path: &Path) -> Vec<ServerEntry> {
 				path_with_placeholders,
 			}
 		})
-		.collect::<Vec<_>>()
+		.collect::<Vec<_>>();
+	entries.sort_by(|a, b| {
+		a.path_with_placeholders
+			.cmp(&b.path_with_placeholders)
+			.reverse()
+	});
+	entries
 }
 
 fn path_with_placeholders(pages_path: &Path, manifest_path: &Path) -> String {

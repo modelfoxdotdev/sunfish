@@ -4,15 +4,15 @@ members = [
 ]
 
 [package]
-authors = ["Tangram <root@tangram.xyz"]
+authors = ["Tangram <root@tangram.dev"]
 description = "Web Application Build Tool"
 documentation = "https://docs.rs/sunfish"
 edition = "2018"
-homepage = "https://github.com/tangramxyz/sunfish"
+homepage = "https://github.com/tangramdotdev/sunfish"
 license = "MIT"
 name = "sunfish"
 publish = true
-repository = "https://github.com/tangramxyz/sunfish"
+repository = "https://github.com/tangramdotdev/sunfish"
 version = "0.2.4"
 
 [lib]
