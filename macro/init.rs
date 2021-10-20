@@ -80,6 +80,7 @@ fn embedded_directory(output_path: &Path) -> proc_macro2::TokenStream {
 	}}
 }
 
+#[derive(Debug)]
 struct ServerEntry {
 	package_name: String,
 	path_with_placeholders: String,
@@ -117,11 +118,7 @@ fn server_entries(pages_path: &Path) -> Vec<ServerEntry> {
 			}
 		})
 		.collect::<Vec<_>>();
-	entries.sort_by(|a, b| {
-		a.path_with_placeholders
-			.cmp(&b.path_with_placeholders)
-			.reverse()
-	});
+	entries.sort_by(|a, b| a.path_with_placeholders.cmp(&b.path_with_placeholders));
 	entries
 }
 
