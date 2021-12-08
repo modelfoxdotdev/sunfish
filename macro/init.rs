@@ -111,7 +111,7 @@ fn server_entries(pages_path: &Path) -> Vec<ServerEntry> {
 				.as_str()
 				.unwrap()
 				.to_owned();
-			let path_with_placeholders = path_with_placeholders(&pages_path, &manifest_path);
+			let path_with_placeholders = path_with_placeholders(pages_path, &manifest_path);
 			ServerEntry {
 				package_name,
 				path_with_placeholders,

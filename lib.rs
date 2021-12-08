@@ -243,7 +243,7 @@ impl ReleaseSunfish {
 			return Ok(None);
 		}
 		let path = Path::new(path.strip_prefix('/').unwrap());
-		let file = if let Some(file) = self.embedded_dir.read(&path) {
+		let file = if let Some(file) = self.embedded_dir.read(path) {
 			file
 		} else {
 			return Ok(None);
@@ -251,7 +251,7 @@ impl ReleaseSunfish {
 		let data = file.data;
 		let hash = &file.hash;
 		let mut response = http::Response::builder();
-		if let Some(content_type) = content_type(&path) {
+		if let Some(content_type) = content_type(path) {
 			response = response.header(http::header::CONTENT_TYPE, content_type);
 		}
 		response = response.header(http::header::ETAG, hash);
