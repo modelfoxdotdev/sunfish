@@ -27,7 +27,7 @@ pub fn build(options: BuildOptions) -> Result<()> {
 	std::fs::create_dir_all(&js_dir).unwrap();
 	// Build client crates.
 	let mut client_crate_manifest_paths = Vec::new();
-	for entry in Walk::new(options.crate_path.join("pages")) {
+	for entry in Walk::new(options.crate_path.join("routes")) {
 		let entry = entry.unwrap();
 		let path = entry.path();
 		let suffix: PathBuf = ["client", "Cargo.toml"].iter().collect();

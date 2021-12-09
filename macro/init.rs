@@ -11,9 +11,9 @@ pub fn init(_input: proc_macro2::TokenStream) -> syn::Result<proc_macro2::TokenS
 	let output_path = out_dir.join("output");
 	let output_path_string = output_path.display().to_string();
 	std::fs::create_dir_all(&output_path).unwrap();
-	let pages_path = package_path.join("pages");
+	let routes_path = package_path.join("routes");
 	let embedded_directory = embedded_directory(&output_path);
-	let server_entries = server_entries(&pages_path);
+	let server_entries = server_entries(&routes_path);
 	let routes_handler = routes_handler(&server_entries);
 	let routes = routes(&server_entries);
 	let code = quote! {{
@@ -86,8 +86,8 @@ struct ServerEntry {
 	path_with_placeholders: String,
 }
 
-fn server_entries(pages_path: &Path) -> Vec<ServerEntry> {
-	let glob = pages_path
+fn server_entries(routes_path: &Path) -> Vec<ServerEntry> {
+	let glob = routes_path
 		.join("**")
 		.join("server")
 		.join("Cargo.toml")
@@ -111,7 +111,7 @@ fn server_entries(pages_path: &Path) -> Vec<ServerEntry> {
 				.as_str()
 				.unwrap()
 				.to_owned();
-			let path_with_placeholders = path_with_placeholders(pages_path, &manifest_path);
+			let path_with_placeholders = path_with_placeholders(routes_path, &manifest_path);
 			ServerEntry {
 				package_name,
 				path_with_placeholders,
@@ -122,13 +122,13 @@ fn server_entries(pages_path: &Path) -> Vec<ServerEntry> {
 	entries
 }
 
-fn path_with_placeholders(pages_path: &Path, manifest_path: &Path) -> String {
+fn path_with_placeholders(routes_path: &Path, manifest_path: &Path) -> String {
 	let components = manifest_path
 		.parent()
 		.unwrap()
 		.parent()
 		.unwrap()
-		.strip_prefix(&pages_path)
+		.strip_prefix(&routes_path)
 		.unwrap()
 		.components()
 		.map(|component| match component {
