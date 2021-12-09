@@ -2,13 +2,14 @@
 authors = ["Tangram <root@tangram.dev"]
 description = "Web Application Build Tool"
 documentation = "https://docs.rs/sunfish"
-edition = "2018"
+edition = "2021"
 homepage = "https://github.com/tangramdotdev/sunfish"
 license = "MIT"
 name = "sunfish_macro"
 publish = true
 repository = "https://github.com/tangramdotdev/sunfish"
-version = "0.2.5"
+rust-version = "1.57"
+version = "0.3.0"
 
 [lib]
 path = "lib.rs"

@@ -958,7 +958,7 @@ dependencies = [
 
 [[package]]
 name = "sunfish"
-version = "0.2.5"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "futures",
@@ -981,7 +981,7 @@ dependencies = [
 
 [[package]]
 name = "sunfish_macro"
-version = "0.2.5"
+version = "0.3.0"
 dependencies = [
  "glob",
  "proc-macro2",
