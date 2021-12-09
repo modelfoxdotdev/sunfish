@@ -18,7 +18,7 @@ pub mod embed;
 mod hash;
 pub mod watchserve;
 
-pub enum Page {
+pub enum Route {
 	Static {
 		paths: Option<Box<dyn 'static + Send + Sync + Fn() -> Vec<String>>>,
 		handler: Box<dyn 'static + Send + Sync + Fn(String) -> String>,
@@ -35,36 +35,36 @@ pub type DynamicHandler = Box<
 pub type DynamicHandlerOutput<'a> =
 	Pin<Box<dyn 'a + Send + Future<Output = Result<http::Response<hyper::Body>>>>>;
 
-impl Page {
-	pub fn new_static<H>(handler: H) -> Page
+impl Route {
+	pub fn new_static<H>(handler: H) -> Route
 	where
 		H: 'static + Send + Sync + Fn(String) -> String,
 	{
-		Page::Static {
+		Route::Static {
 			paths: None,
 			handler: Box::new(handler),
 		}
 	}
 
-	pub fn new_static_with_paths<P, H>(paths: P, handler: H) -> Page
+	pub fn new_static_with_paths<P, H>(paths: P, handler: H) -> Route
 	where
 		P: 'static + Send + Sync + Fn() -> Vec<String>,
 		H: 'static + Send + Sync + Fn(String) -> String,
 	{
-		Page::Static {
+		Route::Static {
 			paths: Some(Box::new(paths)),
 			handler: Box::new(handler),
 		}
 	}
 
-	pub fn new_dynamic<H>(handler: H) -> Page
+	pub fn new_dynamic<H>(handler: H) -> Route
 	where
 		H: 'static
 			+ Send
 			+ Sync
 			+ for<'a> Fn(&'a mut http::Request<hyper::Body>) -> DynamicHandlerOutput<'a>,
 	{
-		Page::Dynamic {
+		Route::Dynamic {
 			handler: Box::new(handler),
 		}
 	}
@@ -74,7 +74,7 @@ impl Page {
 		request: &'a mut http::Request<hyper::Body>,
 	) -> DynamicHandlerOutput<'a> {
 		match self {
-			Page::Static { handler, .. } => {
+			Route::Static { handler, .. } => {
 				let html = handler(request.uri().path().to_owned());
 				async {
 					let response = http::Response::builder()
@@ -85,7 +85,7 @@ impl Page {
 				}
 				.boxed()
 			}
-			Page::Dynamic { handler } => handler(request),
+			Route::Dynamic { handler } => handler(request),
 		}
 	}
 }
@@ -135,12 +135,12 @@ pub struct DebugSunfish {
 pub struct ReleaseSunfish {
 	pub embedded_dir: EmbeddedDirectory,
 	pub routes_handler: RoutesHandler,
-	pub routes: Vec<Route>,
+	pub routes: Vec<RouteInitializer>,
 }
 
-pub struct Route {
+pub struct RouteInitializer {
 	pub path_with_placeholders: String,
-	pub init: fn() -> Page,
+	pub init: fn() -> Route,
 }
 
 impl Sunfish {
@@ -289,7 +289,7 @@ impl ReleaseSunfish {
 		// Render and write the html for each page.
 		for route in self.routes.iter() {
 			match (route.init)() {
-				Page::Static { paths, handler } => {
+				Route::Static { paths, handler } => {
 					let paths = paths
 						.map(|paths| paths())
 						.unwrap_or_else(|| vec![route.path_with_placeholders.clone()]);
@@ -306,7 +306,7 @@ impl ReleaseSunfish {
 						std::fs::write(&output_html_path, html)?;
 					}
 				}
-				Page::Dynamic { .. } => continue,
+				Route::Dynamic { .. } => continue,
 			}
 		}
 		Ok(())
