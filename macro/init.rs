@@ -195,7 +195,7 @@ fn routes(server_entries: &[ServerEntry]) -> proc_macro2::TokenStream {
 			let package_name_ident = format_ident!("{}", package_name);
 			let path_with_placeholders = &server_entry.path_with_placeholders;
 			quote! {
-				sunfish::Route {
+				sunfish::RouteInitializer {
 					path_with_placeholders: #path_with_placeholders.to_owned(),
 					init: #package_name_ident::init,
 				}
