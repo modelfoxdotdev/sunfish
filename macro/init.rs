@@ -52,18 +52,13 @@ fn embedded_directory(output_path: &Path) -> proc_macro2::TokenStream {
 			}
 		})
 		.collect();
-	let relative_paths: Vec<PathBuf> = absolute_paths
+	let relative_paths = absolute_paths
 		.iter()
-		.map(|absolute_path| absolute_path.strip_prefix(&output_path).unwrap().to_owned())
-		.collect();
-	let absolute_paths: Vec<String> = absolute_paths
-		.into_iter()
-		.map(|path| path.to_str().unwrap().to_owned())
-		.collect();
-	let relative_paths: Vec<String> = relative_paths
-		.into_iter()
-		.map(|path| path.to_str().unwrap().to_owned())
-		.collect();
+		.map(|absolute_path| absolute_path.strip_prefix(&output_path).unwrap().to_owned());
+	let absolute_paths = absolute_paths
+		.iter()
+		.map(|path| path.to_str().unwrap().to_owned());
+	let relative_paths = relative_paths.map(|path| path.to_str().unwrap().to_owned());
 	quote! {{
 		let mut map = std::collections::HashMap::new();
 		#({
