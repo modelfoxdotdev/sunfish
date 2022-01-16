@@ -5,7 +5,6 @@ pub use self::{
 };
 use anyhow::Result;
 use futures::FutureExt;
-use ignore::Walk;
 use std::{
 	future::Future,
 	path::{Path, PathBuf},
@@ -153,13 +152,6 @@ impl Sunfish {
 			Sunfish::Release(s) => s.handle(request).await,
 		}
 	}
-
-	pub fn export(&self, out_dir: &Path, dist_path: &Path) -> Result<()> {
-		match self {
-			Sunfish::Debug(_) => unimplemented!(),
-			Sunfish::Release(s) => s.export(out_dir, dist_path),
-		}
-	}
 }
 
 impl DebugSunfish {
@@ -265,51 +257,6 @@ impl ReleaseSunfish {
 		response = response.status(http::StatusCode::OK);
 		let response = response.body(hyper::Body::from(data)).unwrap();
 		Ok(Some(response))
-	}
-
-	pub fn export(&self, out_dir: &Path, dist_path: &Path) -> Result<()> {
-		let output_path = out_dir.join("output");
-		// Create a new directory at dist_path.
-		if std::fs::metadata(&dist_path).is_ok() {
-			std::fs::remove_dir_all(&dist_path)?;
-		}
-		std::fs::create_dir_all(&dist_path)?;
-		// Copy the contents of the out_dir to the dist_path.
-		for entry in Walk::new(&output_path) {
-			let entry = entry.unwrap();
-			let input_path = entry.path();
-			if !input_path.is_file() {
-				continue;
-			}
-			let path = input_path.strip_prefix(&output_path).unwrap();
-			let output_path = dist_path.join(path);
-			std::fs::create_dir_all(output_path.parent().unwrap()).unwrap();
-			std::fs::copy(&input_path, &output_path).unwrap();
-		}
-		// Render and write the html for each page.
-		for route in self.routes.iter() {
-			match (route.init)() {
-				Route::Static { paths, handler } => {
-					let paths = paths
-						.map(|paths| paths())
-						.unwrap_or_else(|| vec![route.path_with_placeholders.clone()]);
-					for path in paths {
-						let output_html_path = match path.as_str() {
-							"/" => "/index.html".to_owned(),
-							path if path.ends_with('/') => format!("{}index.html", path),
-							path => format!("{}.html", path),
-						};
-						let output_html_path =
-							dist_path.join(&output_html_path.strip_prefix('/').unwrap());
-						let html = handler(path);
-						std::fs::create_dir_all(output_html_path.parent().unwrap()).unwrap();
-						std::fs::write(&output_html_path, html)?;
-					}
-				}
-				Route::Dynamic { .. } => continue,
-			}
-		}
-		Ok(())
 	}
 }
 
