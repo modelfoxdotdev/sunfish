@@ -171,7 +171,7 @@ impl DebugSunfish {
 		&self,
 		request: &mut http::Request<hyper::Body>,
 	) -> Result<Option<http::Response<hyper::Body>>> {
-		Ok(self.routes_handler.as_ref()(request).await?)
+		self.routes_handler.as_ref()(request).await
 	}
 
 	async fn serve_asset(
@@ -220,7 +220,7 @@ impl ReleaseSunfish {
 		&self,
 		request: &mut http::Request<hyper::Body>,
 	) -> Result<Option<http::Response<hyper::Body>>> {
-		Ok(self.routes_handler.as_ref()(request).await?)
+		self.routes_handler.as_ref()(request).await
 	}
 
 	async fn serve_asset(
