@@ -3,7 +3,6 @@ use anyhow::{anyhow, Result};
 use ignore::Walk;
 use rayon::prelude::*;
 use std::path::PathBuf;
-use which::which;
 
 pub struct BuildOptions {
 	pub workspace_path: PathBuf,
@@ -13,11 +12,6 @@ pub struct BuildOptions {
 }
 
 pub fn build(options: BuildOptions) -> Result<()> {
-	let target_wasm_dir = if cfg!(windows) {
-		options.workspace_path.join("target_wasm")
-	} else {
-		options.crate_out_dir.join("target_wasm")
-	};
 	let output_dir = options.crate_out_dir.join("output");
 	let assets_dir = output_dir.join("assets");
 	let js_dir = output_dir.join("js");
@@ -67,36 +61,15 @@ pub fn build(options: BuildOptions) -> Result<()> {
 			.is_ok()
 		})
 		.collect::<Vec<_>>();
-	if !enabled_client_crate_package_names.is_empty() {
-		let cmd = which("cargo")?;
-		let mut args = vec![
-			"build".to_owned(),
-			"--target-dir".to_owned(),
-			target_wasm_dir.display().to_string(),
-			"--target".to_owned(),
-			"wasm32-unknown-unknown".to_owned(),
-		];
-		if profile == "release" {
-			args.push("--release".to_owned())
-		}
-		for enabled_client_crate_package_name in enabled_client_crate_package_names.iter() {
-			args.push("--package".to_owned());
-			args.push(enabled_client_crate_package_name.clone());
-		}
-		let mut process = std::process::Command::new(cmd).args(&args).spawn()?;
-		let status = process.wait()?;
-		if !status.success() {
-			return Err(anyhow!("cargo {}", status.to_string()));
-		}
-	}
 	enabled_client_crate_package_names
 		.par_iter()
 		.for_each(|client_crate_package_name| {
 			let hash = hash(client_crate_package_name);
-			let mut input_path = target_wasm_dir.clone();
-			input_path.push("wasm32-unknown-unknown");
-			input_path.push(&profile);
-			input_path.push(format!("{}.wasm", client_crate_package_name));
+			let input_path = std::env::var(format!(
+				"CARGO_BIN_FILE_{}",
+				client_crate_package_name.to_uppercase()
+			))
+			.unwrap();
 			let output_path = js_dir.join(format!("{}_bg.wasm", hash));
 			// Do not re-run wasm-bindgen if the output wasm exists and is not older than the input wasm.
 			let input_metadata = std::fs::metadata(&input_path).unwrap();
