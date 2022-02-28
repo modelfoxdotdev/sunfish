@@ -12,7 +12,7 @@ pub fn include_dir(input: proc_macro2::TokenStream) -> syn::Result<proc_macro2::
 	}};
 	let embedded_directory = quote! {{
 		let embedded_directory = sunfish::embed!(#path_string);
-		sunfish::embed::IncldueDir::Embedded(embedded_directory)
+		sunfish::embed::IncludeDir::Embedded(embedded_directory)
 	}};
 	let code = quote! {{
 	  #[cfg(debug_assertions)]
