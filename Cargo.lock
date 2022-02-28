@@ -921,7 +921,7 @@ dependencies = [
 
 [[package]]
 name = "sunfish"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "anyhow",
  "digest",
@@ -946,7 +946,7 @@ dependencies = [
 
 [[package]]
 name = "sunfish_macro"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "digest",
  "glob",

@@ -32,7 +32,7 @@ impl IntoIterator for IncludeDir {
 				walkdir::WalkDir::new(fs.0).sort_by_file_name().into_iter(),
 			),
 			IncludeDir::Included(embedded) => {
-				FsOrIncludedIntoIter::Embedded(embedded.0.into_iter())
+				FsOrIncludedIntoIter::Included(embedded.0.into_iter())
 			}
 		}
 	}
@@ -40,7 +40,7 @@ impl IntoIterator for IncludeDir {
 
 pub enum FsOrIncludedIntoIter {
 	Fs(walkdir::IntoIter),
-	Embedded(std::collections::btree_map::IntoIter<&'static Path, IncludedFile>),
+	Included(std::collections::btree_map::IntoIter<&'static Path, IncludedFile>),
 }
 
 impl Iterator for FsOrIncludedIntoIter {
@@ -60,7 +60,7 @@ impl Iterator for FsOrIncludedIntoIter {
 					continue;
 				}
 			},
-			FsOrIncludedIntoIter::Embedded(map) => map
+			FsOrIncludedIntoIter::Included(map) => map
 				.next()
 				.map(|(path, file)| (path.to_owned(), FsOrIncludedFile::Included(file))),
 		}

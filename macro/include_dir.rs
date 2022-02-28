@@ -14,7 +14,7 @@ pub fn include_dir(input: proc_macro2::TokenStream) -> syn::Result<proc_macro2::
 	}};
 	let embedded_directory = embedded_directory(&path);
 	let embedded_directory = quote! {{
-		sunfish::include_dir::IncludeDir::Embedded(#embedded_directory)
+		sunfish::include_dir::IncludeDir::Included(#embedded_directory)
 	}};
 	let code = quote! {{
 	  #[cfg(debug_assertions)]
@@ -55,13 +55,13 @@ fn embedded_directory(path: &Path) -> proc_macro2::TokenStream {
 		#({
 			let path = std::path::Path::new(#relative_paths);
 			let data = include_bytes!(#absolute_paths);
-			let file = sunfish::include_dir::EmbeddedFile {
+			let file = sunfish::include_dir::IncludedFile {
 				data: data.as_ref(),
 				hash: #hashes,
 			};
 			map.insert(path, file);
 		})*
-		sunfish::include_dir::EmbeddedDirectory(map)
+		sunfish::include_dir::IncludedDirectory(map)
 	}}
 }
 
