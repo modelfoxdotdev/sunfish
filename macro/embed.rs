@@ -2,6 +2,17 @@ use quote::quote;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
+use sha2::Digest;
+
+pub fn hash(bytes: impl AsRef<[u8]>) -> String {
+	let mut hash: sha2::Sha256 = Digest::new();
+	hash.update(bytes);
+	let hash = hash.finalize();
+	let hash = hex::encode(hash);
+	let hash = &hash[0..16];
+	hash.to_owned()
+}
+
 pub fn embed(input: proc_macro2::TokenStream) -> syn::Result<proc_macro2::TokenStream> {
 	let path: syn::LitStr = syn::parse2(input)?;
 	let path = Path::new(&path.value()).canonicalize().unwrap();
@@ -26,6 +37,9 @@ fn embedded_directory(path: &Path) -> proc_macro2::TokenStream {
 			}
 		})
 		.collect();
+	let hashes = absolute_paths
+		.iter()
+		.map(|path| hash(std::fs::read(path).unwrap()));
 	let relative_paths = absolute_paths
 		.iter()
 		.map(|absolute_path| absolute_path.strip_prefix(&path).unwrap().to_owned());
@@ -38,13 +52,12 @@ fn embedded_directory(path: &Path) -> proc_macro2::TokenStream {
 		#({
 			let path = std::path::Path::new(#relative_paths);
 			let data = include_bytes!(#absolute_paths);
-			let hash = sunfish::hash(data);
 			let file = sunfish::embed::EmbeddedFile {
 				data: data.as_ref(),
-				hash,
+				hash: #hashes,
 			};
 			map.insert(path, file);
 		})*
-		sunfish::embed::EmbeddedDirectory::new(map)
+		sunfish::embed::EmbeddedDirectory(map)
 	}}
 }

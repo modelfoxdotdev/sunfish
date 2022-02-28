@@ -9,9 +9,21 @@ pub fn init(_input: proc_macro2::TokenStream) -> syn::Result<proc_macro2::TokenS
 	let routes_path = package_path.join("routes");
 	let server_entries = server_entries(&routes_path);
 	let routes_handler = routes_handler(&server_entries);
+	let fs_directory = quote! {{
+		let path = std::path::PathBuf::from(#output_path_string);
+		let real_directory = sunfish::embed::FsDirectory(path);
+		sunfish::embed::FsOrEmbeddedDirectory::Fs(real_directory)
+	}};
+	let embedded_directory = quote! {{
+		let embedded_directory = sunfish::embed!(#output_path_string);
+		sunfish::embed::FsOrEmbeddedDirectory::Embedded(embedded_directory)
+	}};
 	let code = quote! {{
 		sunfish::Sunfish {
-			embedded_dir: sunfish::embed!(#output_path_string),
+			#[cfg(debug_assertions)]
+			output: #fs_directory,
+			#[cfg(not(debug_assertions))]
+			output: #embedded_directory,
 			routes_handler: #routes_handler,
 		}
 	}};

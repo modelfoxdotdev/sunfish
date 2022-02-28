@@ -947,8 +947,10 @@ name = "sunfish_macro"
 version = "0.5.0"
 dependencies = [
  "glob",
+ "hex",
  "proc-macro2",
  "quote",
+ "sha2",
  "syn",
  "toml",
  "walkdir",

@@ -1,4 +1,4 @@
-use self::embed::EmbeddedDirectory;
+use self::embed::FsOrEmbeddedDirectory;
 pub use self::{
 	builder::{build, BuildOptions},
 	hash::hash,
@@ -116,7 +116,7 @@ type RoutesHandlerOutput<'a> =
 	Pin<Box<dyn 'a + Send + Future<Output = Result<Option<http::Response<hyper::Body>>>>>>;
 
 pub struct Sunfish {
-	pub embedded_dir: EmbeddedDirectory,
+	pub output: FsOrEmbeddedDirectory,
 	pub routes_handler: RoutesHandler,
 }
 
@@ -157,27 +157,27 @@ impl Sunfish {
 			return Ok(None);
 		}
 		let path = Path::new(path.strip_prefix('/').unwrap());
-		let file = if let Some(file) = self.embedded_dir.read(path) {
+		let file = if let Some(file) = self.output.read(path) {
 			file
 		} else {
 			return Ok(None);
 		};
-		let data = file.data;
-		let hash = &file.hash;
 		let mut response = http::Response::builder();
 		if let Some(content_type) = content_type(path) {
 			response = response.header(http::header::CONTENT_TYPE, content_type);
 		}
-		response = response.header(http::header::ETAG, hash);
-		if let Some(etag) = request.headers().get(http::header::IF_NONE_MATCH) {
-			if etag.as_bytes() == hash.as_bytes() {
-				response = response.status(http::StatusCode::NOT_MODIFIED);
-				let response = response.body(hyper::Body::empty()).unwrap();
-				return Ok(Some(response));
+		if let Some(hash) = file.hash() {
+			response = response.header(http::header::ETAG, hash);
+			if let Some(etag) = request.headers().get(http::header::IF_NONE_MATCH) {
+				if etag.as_bytes() == hash.as_bytes() {
+					response = response.status(http::StatusCode::NOT_MODIFIED);
+					let response = response.body(hyper::Body::empty()).unwrap();
+					return Ok(Some(response));
+				}
 			}
 		}
 		response = response.status(http::StatusCode::OK);
-		let response = response.body(hyper::Body::from(data)).unwrap();
+		let response = response.body(hyper::Body::from(file.data())).unwrap();
 		Ok(Some(response))
 	}
 }
