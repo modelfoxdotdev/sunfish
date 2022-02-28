@@ -3,15 +3,14 @@ pub use self::{
 	hash::hash,
 };
 use anyhow::Result;
+use embed::IncludeDir;
 use futures::FutureExt;
-use include_dir::IncludeDir;
 use std::{future::Future, path::Path, pin::Pin};
 pub use sunfish_macro::{embed, include_dir, init};
 
 mod builder;
 pub mod embed;
 mod hash;
-pub mod include_dir;
 pub mod watchserve;
 
 pub enum Route {
