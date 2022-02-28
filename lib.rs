@@ -5,12 +5,8 @@ pub use self::{
 };
 use anyhow::Result;
 use futures::FutureExt;
-use std::{
-	future::Future,
-	path::{Path, PathBuf},
-	pin::Pin,
-};
-pub use sunfish_macro::init;
+use std::{future::Future, path::Path, pin::Pin};
+pub use sunfish_macro::{embed, init};
 
 mod builder;
 pub mod embed;
@@ -112,11 +108,6 @@ pub fn client_paths(crate_name: &'static str) -> ClientPaths {
 	}
 }
 
-pub enum Sunfish {
-	Debug(DebugSunfish),
-	Release(ReleaseSunfish),
-}
-
 type RoutesHandler = Box<
 	dyn Send + Sync + for<'a> Fn(&'a mut http::Request<hyper::Body>) -> RoutesHandlerOutput<'a>,
 >;
@@ -124,17 +115,9 @@ type RoutesHandler = Box<
 type RoutesHandlerOutput<'a> =
 	Pin<Box<dyn 'a + Send + Future<Output = Result<Option<http::Response<hyper::Body>>>>>>;
 
-pub struct DebugSunfish {
-	pub workspace_path: PathBuf,
-	pub package_path: PathBuf,
-	pub output_path: PathBuf,
-	pub routes_handler: RoutesHandler,
-}
-
-pub struct ReleaseSunfish {
+pub struct Sunfish {
 	pub embedded_dir: EmbeddedDirectory,
 	pub routes_handler: RoutesHandler,
-	pub routes: Vec<RouteInitializer>,
 }
 
 pub struct RouteInitializer {
@@ -143,67 +126,6 @@ pub struct RouteInitializer {
 }
 
 impl Sunfish {
-	pub async fn handle(
-		&self,
-		request: &mut http::Request<hyper::Body>,
-	) -> Result<Option<http::Response<hyper::Body>>> {
-		match self {
-			Sunfish::Debug(s) => s.handle(request).await,
-			Sunfish::Release(s) => s.handle(request).await,
-		}
-	}
-}
-
-impl DebugSunfish {
-	pub async fn handle(
-		&self,
-		request: &mut http::Request<hyper::Body>,
-	) -> Result<Option<http::Response<hyper::Body>>> {
-		let response = self.serve_page(request).await?;
-		let response = match response {
-			Some(response) => Some(response),
-			None => self.serve_asset(request).await?,
-		};
-		Ok(response)
-	}
-
-	async fn serve_page(
-		&self,
-		request: &mut http::Request<hyper::Body>,
-	) -> Result<Option<http::Response<hyper::Body>>> {
-		self.routes_handler.as_ref()(request).await
-	}
-
-	async fn serve_asset(
-		&self,
-		request: &http::Request<hyper::Body>,
-	) -> Result<Option<http::Response<hyper::Body>>> {
-		let method = request.method().clone();
-		let uri = request.uri().clone();
-		let path_and_query = uri.path_and_query().unwrap();
-		let path = path_and_query.path();
-		if method != ::http::Method::GET {
-			return Ok(None);
-		}
-		let path = self.output_path.join(path.strip_prefix('/').unwrap());
-		let path_exists = std::fs::metadata(&path)
-			.map(|metadata| metadata.is_file())
-			.unwrap_or(false);
-		if !path_exists {
-			return Ok(None);
-		}
-		let data = tokio::fs::read(&path).await?;
-		let mut response = http::Response::builder();
-		if let Some(content_type) = content_type(&path) {
-			response = response.header(http::header::CONTENT_TYPE, content_type);
-		}
-		response = response.status(http::StatusCode::OK);
-		let response = response.body(hyper::Body::from(data)).unwrap();
-		Ok(Some(response))
-	}
-}
-
-impl ReleaseSunfish {
 	pub async fn handle(
 		&self,
 		request: &mut http::Request<hyper::Body>,
