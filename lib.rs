@@ -1,16 +1,17 @@
-use self::embed::FsOrEmbeddedDirectory;
 pub use self::{
 	builder::{build, BuildOptions},
 	hash::hash,
 };
 use anyhow::Result;
 use futures::FutureExt;
+use include_dir::IncludeDir;
 use std::{future::Future, path::Path, pin::Pin};
-pub use sunfish_macro::{embed, init};
+pub use sunfish_macro::{embed, include_dir, init};
 
 mod builder;
 pub mod embed;
 mod hash;
+pub mod include_dir;
 pub mod watchserve;
 
 pub enum Route {
@@ -116,7 +117,7 @@ type RoutesHandlerOutput<'a> =
 	Pin<Box<dyn 'a + Send + Future<Output = Result<Option<http::Response<hyper::Body>>>>>>;
 
 pub struct Sunfish {
-	pub output: FsOrEmbeddedDirectory,
+	pub output: IncludeDir,
 	pub routes_handler: RoutesHandler,
 }
 

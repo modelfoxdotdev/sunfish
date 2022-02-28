@@ -938,6 +938,7 @@ dependencies = [
  "tokio-stream",
  "toml",
  "tracing",
+ "walkdir",
  "wasm-bindgen-cli-support",
  "which",
 ]

@@ -31,9 +31,10 @@ notify = "5.0.0-pre.11"
 rayon = "1.5"
 sha2 = "0.10"
 sunfish_macro = { version = "0.6", path = "macro" }
-tokio = { version = "1" ,features = ["full"] }
+tokio = { version = "1", features = ["full"] }
 tokio-stream = "0.1"
 toml = "0.5"
 tracing = "0.1"
+walkdir = "2"
 wasm-bindgen-cli-support = "0.2"
 which = "4"
