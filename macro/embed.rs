@@ -24,7 +24,7 @@ pub fn embed(input: proc_macro2::TokenStream) -> syn::Result<proc_macro2::TokenS
 }
 
 fn embedded_directory(path: &Path) -> proc_macro2::TokenStream {
-	let absolute_paths: Vec<PathBuf> = WalkDir::new(&path)
+	let mut absolute_paths: Vec<PathBuf> = WalkDir::new(&path)
 		.into_iter()
 		.filter_map(|entry| {
 			let entry = entry.unwrap();
@@ -37,6 +37,7 @@ fn embedded_directory(path: &Path) -> proc_macro2::TokenStream {
 			}
 		})
 		.collect();
+	absolute_paths.sort();
 	let hashes = absolute_paths
 		.iter()
 		.map(|path| hash(std::fs::read(path).unwrap()));
@@ -48,7 +49,7 @@ fn embedded_directory(path: &Path) -> proc_macro2::TokenStream {
 		.map(|path| path.to_str().unwrap().to_owned());
 	let relative_paths = relative_paths.map(|path| path.to_str().unwrap().to_owned());
 	quote! {{
-		let mut map = std::collections::HashMap::new();
+		let mut map = std::collections::BTreeMap::new();
 		#({
 			let path = std::path::Path::new(#relative_paths);
 			let data = include_bytes!(#absolute_paths);

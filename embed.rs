@@ -1,6 +1,6 @@
 use std::{
 	borrow::Cow,
-	collections::HashMap,
+	collections::BTreeMap,
 	path::{Path, PathBuf},
 };
 
@@ -65,7 +65,7 @@ impl FsFile {
 }
 
 #[derive(Debug)]
-pub struct EmbeddedDirectory(pub HashMap<&'static Path, EmbeddedFile>);
+pub struct EmbeddedDirectory(pub BTreeMap<&'static Path, EmbeddedFile>);
 
 #[derive(Clone, Debug)]
 pub struct EmbeddedFile {
