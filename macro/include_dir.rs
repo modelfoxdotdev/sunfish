@@ -8,21 +8,17 @@ pub fn include_dir(input: proc_macro2::TokenStream) -> syn::Result<proc_macro2::
 	let fs_directory = quote! {{
 	  let path = std::path::PathBuf::from(#path_string);
 		let fs_directory = sunfish::embed::FsDirectory(path);
-		sunfish::embed::FsOrEmbeddedDirectory::Fs(fs_directory)
+		sunfish::embed::IncludeDir::Fs(fs_directory)
 	}};
 	let embedded_directory = quote! {{
 		let embedded_directory = sunfish::embed!(#path_string);
-		sunfish::embed::FsOrEmbeddedDirectory::Embedded(embedded_directory)
-	}};
-	let include_dir = quote! {{
-	  #[cfg(debug_assertions)]
-	  let output = #fs_directory;
-	  #[cfg(not(debug_assertions))]
-	  let output = #embedded_directory;
-	  sunfish::include_dir::IncludeDir(output)
+		sunfish::embed::IncldueDir::Embedded(embedded_directory)
 	}};
 	let code = quote! {{
-	  #include_dir
+	  #[cfg(debug_assertions)]
+	  #fs_directory
+	  #[cfg(not(debug_assertions))]
+	  #embedded_directory
 	}};
 	Ok(code)
 }
