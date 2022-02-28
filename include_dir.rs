@@ -6,48 +6,48 @@ use std::{
 
 pub enum IncludeDir {
 	Fs(FsDirectory),
-	Embedded(EmbeddedDirectory),
+	Included(IncludedDirectory),
 }
 
-pub enum FsOrEmbeddedFile {
+pub enum FsOrIncludedFile {
 	Fs(FsFile),
-	Embedded(EmbeddedFile),
+	Included(IncludedFile),
 }
 
 impl IncludeDir {
-	pub fn read(&self, path: &Path) -> Option<FsOrEmbeddedFile> {
+	pub fn read(&self, path: &Path) -> Option<FsOrIncludedFile> {
 		match self {
 			IncludeDir::Fs(s) => s.read(path),
-			IncludeDir::Embedded(s) => s.read(path),
+			IncludeDir::Included(s) => s.read(path),
 		}
 	}
 }
 
 impl IntoIterator for IncludeDir {
-	type Item = (PathBuf, FsOrEmbeddedFile);
-	type IntoIter = FsOrEmbeddedIntoIter;
+	type Item = (PathBuf, FsOrIncludedFile);
+	type IntoIter = FsOrIncludedIntoIter;
 	fn into_iter(self) -> Self::IntoIter {
 		match self {
-			IncludeDir::Fs(fs) => FsOrEmbeddedIntoIter::Fs(
+			IncludeDir::Fs(fs) => FsOrIncludedIntoIter::Fs(
 				walkdir::WalkDir::new(fs.0).sort_by_file_name().into_iter(),
 			),
-			IncludeDir::Embedded(embedded) => {
-				FsOrEmbeddedIntoIter::Embedded(embedded.0.into_iter())
+			IncludeDir::Included(embedded) => {
+				FsOrIncludedIntoIter::Embedded(embedded.0.into_iter())
 			}
 		}
 	}
 }
 
-pub enum FsOrEmbeddedIntoIter {
+pub enum FsOrIncludedIntoIter {
 	Fs(walkdir::IntoIter),
-	Embedded(std::collections::btree_map::IntoIter<&'static Path, EmbeddedFile>),
+	Embedded(std::collections::btree_map::IntoIter<&'static Path, IncludedFile>),
 }
 
-impl Iterator for FsOrEmbeddedIntoIter {
-	type Item = (PathBuf, FsOrEmbeddedFile);
+impl Iterator for FsOrIncludedIntoIter {
+	type Item = (PathBuf, FsOrIncludedFile);
 	fn next(&mut self) -> Option<Self::Item> {
 		match self {
-			FsOrEmbeddedIntoIter::Fs(walkdir) => loop {
+			FsOrIncludedIntoIter::Fs(walkdir) => loop {
 				let entry = match walkdir.next() {
 					None => return None,
 					Some(Err(e)) => panic!("{}", e),
@@ -55,30 +55,30 @@ impl Iterator for FsOrEmbeddedIntoIter {
 				};
 				if entry.file_type().is_file() {
 					let path = entry.path().to_owned();
-					return Some((path.clone(), FsOrEmbeddedFile::Fs(FsFile(path))));
+					return Some((path.clone(), FsOrIncludedFile::Fs(FsFile(path))));
 				} else {
 					continue;
 				}
 			},
-			FsOrEmbeddedIntoIter::Embedded(map) => map
+			FsOrIncludedIntoIter::Embedded(map) => map
 				.next()
-				.map(|(path, file)| (path.to_owned(), FsOrEmbeddedFile::Embedded(file))),
+				.map(|(path, file)| (path.to_owned(), FsOrIncludedFile::Included(file))),
 		}
 	}
 }
 
-impl FsOrEmbeddedFile {
+impl FsOrIncludedFile {
 	pub fn data(&self) -> Cow<'static, [u8]> {
 		match self {
-			FsOrEmbeddedFile::Fs(s) => s.data(),
-			FsOrEmbeddedFile::Embedded(s) => s.data(),
+			FsOrIncludedFile::Fs(s) => s.data(),
+			FsOrIncludedFile::Included(s) => s.data(),
 		}
 	}
 
 	pub fn hash(&self) -> Option<&'static str> {
 		match self {
-			FsOrEmbeddedFile::Fs(s) => s.hash(),
-			FsOrEmbeddedFile::Embedded(s) => s.hash(),
+			FsOrIncludedFile::Fs(s) => s.hash(),
+			FsOrIncludedFile::Included(s) => s.hash(),
 		}
 	}
 }
@@ -86,10 +86,10 @@ impl FsOrEmbeddedFile {
 pub struct FsDirectory(pub PathBuf);
 
 impl FsDirectory {
-	pub fn read(&self, path: &Path) -> Option<FsOrEmbeddedFile> {
+	pub fn read(&self, path: &Path) -> Option<FsOrIncludedFile> {
 		let path = self.0.join(path);
 		if path.exists() {
-			Some(FsOrEmbeddedFile::Fs(FsFile(path)))
+			Some(FsOrIncludedFile::Fs(FsFile(path)))
 		} else {
 			None
 		}
@@ -109,23 +109,23 @@ impl FsFile {
 }
 
 #[derive(Debug)]
-pub struct EmbeddedDirectory(pub BTreeMap<&'static Path, EmbeddedFile>);
+pub struct IncludedDirectory(pub BTreeMap<&'static Path, IncludedFile>);
 
 #[derive(Clone, Debug)]
-pub struct EmbeddedFile {
+pub struct IncludedFile {
 	pub data: &'static [u8],
 	pub hash: &'static str,
 }
 
-impl EmbeddedDirectory {
-	pub fn read(&self, path: &Path) -> Option<FsOrEmbeddedFile> {
+impl IncludedDirectory {
+	pub fn read(&self, path: &Path) -> Option<FsOrIncludedFile> {
 		self.0
 			.get(path)
-			.map(|file| FsOrEmbeddedFile::Embedded(file.clone()))
+			.map(|file| FsOrIncludedFile::Included(file.clone()))
 	}
 }
 
-impl EmbeddedFile {
+impl IncludedFile {
 	pub fn data(&self) -> Cow<'static, [u8]> {
 		Cow::Borrowed(self.data)
 	}

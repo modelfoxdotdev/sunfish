@@ -1,4 +1,4 @@
-use crate::hash::hash;
+use crate::hash;
 use anyhow::{anyhow, Result};
 use ignore::Walk;
 use rayon::prelude::*;

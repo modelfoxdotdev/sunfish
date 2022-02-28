@@ -1,16 +1,13 @@
-pub use self::{
-	builder::{build, BuildOptions},
-	hash::hash,
-};
+pub use self::builder::{build, BuildOptions};
 use anyhow::Result;
-use embed::IncludeDir;
+use digest::Digest;
 use futures::FutureExt;
+use include_dir::IncludeDir;
 use std::{future::Future, path::Path, pin::Pin};
-pub use sunfish_macro::{embed, include_dir, init};
+pub use sunfish_macro::{include_dir, init};
 
 mod builder;
-pub mod embed;
-mod hash;
+pub mod include_dir;
 pub mod watchserve;
 
 pub enum Route {
@@ -195,4 +192,13 @@ fn content_type(path: &std::path::Path) -> Option<&'static str> {
 	} else {
 		None
 	}
+}
+
+pub fn hash(bytes: impl AsRef<[u8]>) -> String {
+	let mut hash: sha2::Sha256 = Digest::new();
+	hash.update(bytes);
+	let hash = hash.finalize();
+	let hash = hex::encode(hash);
+	let hash = &hash[0..16];
+	hash.to_owned()
 }

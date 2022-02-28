@@ -924,6 +924,7 @@ name = "sunfish"
 version = "0.7.0"
 dependencies = [
  "anyhow",
+ "digest",
  "futures",
  "futures-batch",
  "hex",
@@ -947,6 +948,7 @@ dependencies = [
 name = "sunfish_macro"
 version = "0.7.0"
 dependencies = [
+ "digest",
  "glob",
  "hex",
  "proc-macro2",

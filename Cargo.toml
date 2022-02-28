@@ -21,6 +21,7 @@ path = "lib.rs"
 
 [dependencies]
 anyhow = { version = "1", features = ["backtrace"] }
+digest = "0.10"
 futures = "0.3"
 futures-batch = "0.6"
 hex = "0.4"
