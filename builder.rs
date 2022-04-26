@@ -104,6 +104,7 @@ pub fn build(options: BuildOptions) -> Result<()> {
 			}
 		}
 	}
+	let css = minifier::css::minify(&css).map_err(|e| anyhow!("{e}"))?;
 	std::fs::write(output_dir.join("styles.css"), css).unwrap();
 	// Copy static files.
 	let static_dir = options.crate_path.join("static");
