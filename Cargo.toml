@@ -28,8 +28,8 @@ hex = "0.4"
 http = "0.2"
 hyper = { version = "0.14", features = ["full"] }
 ignore = "0.4"
-minifier = "0.0.43"
 notify = "5.0.0-pre.14"
+parcel_css = "1.0.0-alpha.23"
 rayon = "1.5"
 sha2 = "0.10"
 sunfish_macro = { version = "0.7", path = "macro" }

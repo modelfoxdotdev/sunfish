@@ -1,6 +1,10 @@
 use crate::hash;
 use anyhow::{anyhow, Result};
 use ignore::Walk;
+use parcel_css::{
+	bundler::{Bundler, FileProvider},
+	stylesheet::{MinifyOptions, ParserOptions, PrinterOptions, StyleSheet},
+};
 use rayon::prelude::*;
 use std::path::PathBuf;
 
@@ -94,18 +98,22 @@ pub fn build(options: BuildOptions) -> Result<()> {
 				.unwrap();
 		});
 	// Collect CSS.
-	let mut css = String::new();
-	for dir in options.css_paths {
-		for entry in Walk::new(&dir) {
-			let entry = entry?;
-			let path = entry.path();
-			if path.extension().map(|e| e.to_str().unwrap()) == Some("css") {
-				css.push_str(&std::fs::read_to_string(path)?);
-			}
-		}
-	}
-	let css = minifier::css::minify(&css).map_err(|e| anyhow!("{e}"))?;
-	std::fs::write(output_dir.join("styles.css"), css).unwrap();
+	// let mut css = String::new();
+	// for dir in options.css_paths {
+	// 	for entry in Walk::new(&dir) {
+	// 		let entry = entry?;
+	// 		let path = entry.path();
+	// 		if path.extension().map(|e| e.to_str().unwrap()) == Some("css") {
+	// 			css.push_str(&std::fs::read_to_string(path)?);
+	// 		}
+	// 	}
+	// }
+	let file_provider = FileProvider::new();
+	let mut bundler = Bundler::new(&file_provider, None, ParserOptions::default());
+	let mut css = bundler.bundle(&output_dir.join("styles.css"))?;
+	css.minify(MinifyOptions::default())?;
+	let css = css.to_css(PrinterOptions::default()).unwrap();
+	std::fs::write(output_dir.join("styles.css"), css.code).unwrap();
 	// Copy static files.
 	let static_dir = options.crate_path.join("static");
 	for entry in Walk::new(&static_dir) {
