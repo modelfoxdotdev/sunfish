@@ -9,10 +9,12 @@ pub fn init(_input: proc_macro2::TokenStream) -> syn::Result<proc_macro2::TokenS
 	let routes_path = package_path.join("routes");
 	let server_entries = server_entries(&routes_path);
 	let routes_handler = routes_handler(&server_entries);
+	let routes = routes(&server_entries);
 	let code = quote! {{
 		sunfish::Sunfish {
 			output: sunfish::include_dir!(#output_path_string),
 			routes_handler: #routes_handler,
+			routes: #routes,
 		}
 	}};
 	Ok(code)
@@ -123,4 +125,22 @@ fn routes_handler(server_entries: &[ServerEntry]) -> proc_macro2::TokenStream {
 			}
 		})
 	}
+}
+
+fn routes(server_entries: &[ServerEntry]) -> proc_macro2::TokenStream {
+	let routes = server_entries
+		.iter()
+		.map(|server_entry| {
+			let package_name = server_entry.package_name.to_owned();
+			let package_name_ident = format_ident!("{}", package_name);
+			let path_with_placeholders = &server_entry.path_with_placeholders;
+			quote! {
+				sunfish::RouteInitializer {
+					path_with_placeholders: #path_with_placeholders.to_owned(),
+					init: #package_name_ident::init,
+				}
+			}
+		})
+		.collect::<Vec<_>>();
+	quote! { vec![#(#routes),*] }
 }
