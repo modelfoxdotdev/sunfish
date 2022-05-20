@@ -51,17 +51,7 @@ pub fn build(options: BuildOptions) -> Result<()> {
 			Ok(client_crate_package_name)
 		})
 		.collect::<Result<Vec<_>>>()?;
-	let enabled_client_crate_package_names = client_crate_package_names
-		.into_iter()
-		.filter(|client_crate_package_name| {
-			std::env::var(format!(
-				"CARGO_FEATURE_{}",
-				client_crate_package_name.to_uppercase()
-			))
-			.is_ok()
-		})
-		.collect::<Vec<_>>();
-	enabled_client_crate_package_names
+	client_crate_package_names
 		.par_iter()
 		.for_each(|client_crate_package_name| {
 			let hash = hash(client_crate_package_name);
