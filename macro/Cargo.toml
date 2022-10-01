@@ -9,7 +9,7 @@ name = "sunfish_macro"
 publish = true
 repository = "https://github.com/tangramdotdev/sunfish"
 rust-version = "1.57"
-version = "0.7.2"
+version = "0.7.3"
 
 [lib]
 path = "lib.rs"

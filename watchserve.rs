@@ -1,4 +1,3 @@
-use futures_batch::ChunksTimeoutStreamExt;
 use notify::Watcher;
 use std::{convert::Infallible, path::PathBuf, sync::Arc};
 use tokio::sync::{Mutex, Notify};
@@ -76,9 +75,10 @@ pub async fn run(config: Config) {
 	tokio::spawn({
 		let state = state.clone();
 		async move {
-			let mut watch_events =
+			let watch_events =
 				tokio_stream::wrappers::UnboundedReceiverStream::new(watch_events_rx)
 					.chunks_timeout(1_000_000, std::time::Duration::from_millis(10));
+			tokio::pin!(watch_events);
 			while watch_events.next().await.is_some() {
 				// Kill the previous child process if any.
 				if let State::Running { child } = &mut *state.lock().await {

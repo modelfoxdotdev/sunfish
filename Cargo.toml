@@ -14,7 +14,7 @@ name = "sunfish"
 publish = true
 repository = "https://github.com/tangramdotdev/sunfish"
 rust-version = "1.57"
-version = "0.7.2"
+version = "0.7.3"
 
 [lib]
 path = "lib.rs"
@@ -23,7 +23,6 @@ path = "lib.rs"
 anyhow = { version = "1", features = ["backtrace"] }
 digest = "0.10"
 futures = "0.3"
-futures-batch = "0.6"
 hex = "0.4"
 http = "0.2"
 hyper = { version = "0.14", features = ["full"] }
